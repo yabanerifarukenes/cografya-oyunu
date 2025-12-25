@@ -1,5 +1,5 @@
 let countries = [];
-let currentMode = 0; // 1: İsim, 2: Bayrak
+let currentMode = 0; 
 let score = 0;
 let timeLeft = 0;
 let timerInterval;
@@ -7,8 +7,7 @@ let gameActive = false;
 let currentQuestion = null;
 let questionsList = [];
 
-// Ülke Kodları Sözlüğü (SVG kodunu Türkçeye çevirir)
-// SVG'deki id'ler genelde 2 harfli ISO kodudur (TR, US, DE, FR...)
+// Ülke İsimleri (SVG Kod -> Türkçe İsim)
 const countryNames = {
     "TR": "Türkiye", "US": "ABD", "DE": "Almanya", "FR": "Fransa", "GB": "İngiltere",
     "RU": "Rusya", "CN": "Çin", "IN": "Hindistan", "BR": "Brezilya", "CA": "Kanada",
@@ -16,43 +15,40 @@ const countryNames = {
     "MX": "Meksika", "AR": "Arjantin", "EG": "Mısır", "ZA": "Güney Afrika", "SA": "Suudi Arabistan",
     "IR": "İran", "IQ": "Irak", "GR": "Yunanistan", "UA": "Ukrayna", "SE": "İsveç",
     "NO": "Norveç", "FI": "Finlandiya", "PL": "Polonya", "NL": "Hollanda", "PT": "Portekiz",
-    "AZ": "Azerbaycan", "KZ": "Kazakistan", "UZ": "Özbekistan", "PK": "Pakistan", "ID": "Endonezya"
+    "AZ": "Azerbaycan", "KZ": "Kazakistan", "UZ": "Özbekistan", "PK": "Pakistan", "ID": "Endonezya",
+    "CH": "İsviçre", "BE": "Belçika", "AT": "Avusturya", "DK": "Danimarka", "HU": "Macaristan"
 };
 
-// --- HARİTAYI YÜKLE ---
-window.addEventListener("DOMContentLoaded", async () => {
-    // world.svg dosyasını çek ve sayfaya göm
-    try {
-        const response = await fetch('world.svg');
-        const svgText = await response.text();
-        document.getElementById('map-wrapper').innerHTML = svgText;
-        
-        // Harita yüklendikten sonra ülkeleri tara
-        setupMap();
-    } catch (error) {
-        document.getElementById('svg-placeholder').textContent = "Hata: world.svg dosyası bulunamadı! Dosyayı oluşturup içine SVG kodlarını yapıştırdın mı?";
-        document.getElementById('svg-placeholder').style.color = "red";
-    }
+// Türkçe karakter temizleme
+function trToEng(str) {
+    if (!str) return "";
+    return str.replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's').replace(/I/g, 'i').replace(/İ/g, 'i').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+              .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+              .toLowerCase().trim();
+}
+
+// --- HARİTAYI KUR ---
+window.addEventListener("DOMContentLoaded", () => {
+    setupMap();
+    
+    // Enter tuşu ile tahmin (Mod 1)
+    document.getElementById("world-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") handleTypeGuess();
+    });
 });
 
 function setupMap() {
     const paths = document.querySelectorAll("path");
-    
     paths.forEach(path => {
-        const code = path.id.toUpperCase(); // TR, US, DE...
-        
-        // Eğer bizim sözlükte bu ülke varsa listeye ekle
+        const code = path.id.toUpperCase();
         if (countryNames[code]) {
             countries.push({
                 element: path,
                 code: code,
-                name: countryNames[code]
+                name: countryNames[code],
+                cleanName: trToEng(countryNames[code])
             });
-
-            // Tıklama olayı
-            path.addEventListener("click", () => handleMapClick(path, code));
-            
-            // Mouse üzerine gelince ismi göster (Title ekle)
+            // Mouse gelince isim göster
             const titleEl = document.createElement("title");
             titleEl.textContent = countryNames[code];
             path.appendChild(titleEl);
@@ -64,16 +60,27 @@ function setupMap() {
 function selectWorldGame(mode) {
     currentMode = mode;
     document.getElementById("world-menu").style.display = "none";
-    
     const title = document.getElementById("game-title");
     
+    // Alanları temizle/gizle
+    document.getElementById("input-area").style.display = "none";
+    document.getElementById("options-area").style.display = "none";
+    document.getElementById("flag-container").style.display = "none";
+    document.getElementById("target-display").textContent = "";
+
     if (mode === 1) {
-        title.textContent = "Mod 1: Ülkeyi Bul";
-        startGame(90);
+        // İSİM YAZMA MODU
+        title.textContent = "Mod 1: İsmini Yaz & Boya";
+        document.getElementById("input-area").style.display = "block";
+        document.getElementById("target-display").textContent = "Bildiğin ülke isimlerini yaz...";
+        document.getElementById("world-input").focus();
+        startGame(180); // 3 Dakika
     } else if (mode === 2) {
-        title.textContent = "Mod 2: Bayrağı Bul";
-        document.getElementById("flag-container").style.display = "block"; // Bayrağı aç
-        startGame(90);
+        // ŞIKLI BAYRAK MODU
+        title.textContent = "Mod 2: Bayrağı Bil";
+        document.getElementById("flag-container").style.display = "block";
+        document.getElementById("options-area").style.display = "flex";
+        startGame(90); // 90 saniye
     }
 }
 
@@ -82,8 +89,6 @@ function startGame(time) {
     timeLeft = time;
     gameActive = true;
     updateStats();
-    document.getElementById("question-area").style.display = "block";
-    
     questionsList = [...countries]; // Listeyi kopyala
 
     clearInterval(timerInterval);
@@ -93,57 +98,112 @@ function startGame(time) {
         if (timeLeft <= 0) endGame();
     }, 1000);
 
-    askNewQuestion();
+    if (currentMode === 2) askFlagQuestion();
 }
 
-function askNewQuestion() {
+// --- MOD 1: İSİM YAZMA ---
+function handleTypeGuess() {
+    if (!gameActive || currentMode !== 1) return;
+
+    const input = document.getElementById("world-input");
+    const feedback = document.getElementById("typed-feedback");
+    let val = trToEng(input.value);
+
+    // Bazı yaygın isim düzeltmeleri
+    if (val === "amerika" || val === "usa") val = "abd";
+    if (val === "ingiltere") val = "ingiltere"; // GB kodu
+
+    const foundCountry = countries.find(c => c.cleanName === val);
+
+    if (foundCountry) {
+        if (foundCountry.element.style.fill === "rgb(46, 204, 113)") { // Zaten yeşilse
+            feedback.textContent = "Bunu zaten buldun!";
+            feedback.style.color = "orange";
+        } else {
+            // DOĞRU
+            foundCountry.element.style.fill = "#2ecc71"; // Yeşil
+            score += 10;
+            updateStats();
+            feedback.textContent = "✅ " + foundCountry.name;
+            feedback.style.color = "green";
+            input.value = "";
+        }
+    } else {
+        feedback.textContent = "❌ Ülke bulunamadı.";
+        feedback.style.color = "red";
+    }
+}
+
+// --- MOD 2: ŞIKLI BAYRAK ---
+function askFlagQuestion() {
     if (questionsList.length === 0) {
         endGame(true);
         return;
     }
-
-    // Rastgele Ülke Seç
+    
+    // Soru seç
     const randomIndex = Math.floor(Math.random() * questionsList.length);
     currentQuestion = questionsList[randomIndex];
-    questionsList.splice(randomIndex, 1);
+    questionsList.splice(randomIndex, 1); // Listeden çıkar
 
-    const display = document.getElementById("target-display");
-    const flagImg = document.getElementById("flag-img");
+    // Bayrağı göster
+    document.getElementById("flag-img").src = `https://flagcdn.com/w320/${currentQuestion.code.toLowerCase()}.png`;
+    document.getElementById("target-display").textContent = "Hangi Ülke?";
 
-    if (currentMode === 1) {
-        // İsim Sor
-        display.textContent = currentQuestion.name.toUpperCase() + " nerede?";
-        document.getElementById("flag-container").style.display = "none";
-    } else if (currentMode === 2) {
-        // Bayrak Sor
-        display.textContent = "Bu bayrak hangi ülkenin?";
-        document.getElementById("flag-container").style.display = "block";
-        // FlagCDN'den bayrağı çek (kodları küçük harf ister: tr, us)
-        flagImg.src = `https://flagcdn.com/w320/${currentQuestion.code.toLowerCase()}.png`;
+    // Şıkları Hazırla (1 Doğru + 3 Yanlış)
+    let options = [currentQuestion];
+    
+    // Yanlış şıklar bul
+    while (options.length < 4) {
+        const randomWrong = countries[Math.floor(Math.random() * countries.length)];
+        // Eğer zaten şıklarda yoksa ekle
+        if (!options.includes(randomWrong)) {
+            options.push(randomWrong);
+        }
     }
+
+    // Şıkları karıştır
+    options.sort(() => Math.random() - 0.5);
+
+    // Butonları oluştur
+    const area = document.getElementById("options-area");
+    area.innerHTML = ""; // Temizle
+    
+    options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = opt.name;
+        btn.onclick = () => checkFlagAnswer(opt, btn);
+        area.appendChild(btn);
+    });
 }
 
-function handleMapClick(path, clickedCode) {
+function checkFlagAnswer(selected, btnElement) {
     if (!gameActive) return;
 
-    if (clickedCode === currentQuestion.code) {
+    const allBtns = document.querySelectorAll(".option-btn");
+    
+    // Tıklamaları engelle
+    allBtns.forEach(b => b.onclick = null);
+
+    if (selected.code === currentQuestion.code) {
         // DOĞRU
-        path.style.fill = "#2ecc71"; // Yeşil (Style.css'i ezmek için style ile verdim)
+        btnElement.classList.add("correct");
         score += 10;
-        updateStats();
-        setTimeout(() => {
-            path.style.fill = ""; // Rengi eski haline getir
-            askNewQuestion();
-        }, 500);
+        // Haritada da yeşil yakalım (hoşluk olsun)
+        currentQuestion.element.style.fill = "#2ecc71";
+        setTimeout(askFlagQuestion, 1000);
     } else {
         // YANLIŞ
-        path.style.fill = "#e74c3c"; // Kırmızı
+        btnElement.classList.add("wrong");
         score -= 5;
-        updateStats();
-        setTimeout(() => {
-            path.style.fill = "";
-        }, 500);
+        // Doğru olanı göster
+        allBtns.forEach(b => {
+            if (b.textContent === currentQuestion.name) b.classList.add("correct");
+        });
+        setTimeout(askFlagQuestion, 1500);
     }
+    updateStats();
 }
 
 function updateStats() {
@@ -155,9 +215,9 @@ function endGame(win = false) {
     gameActive = false;
     clearInterval(timerInterval);
     document.getElementById("game-over-modal").style.display = "flex";
-    document.getElementById("final-message").textContent = win ? "Dünya Turu Tamamlandı! 🎉" : "Süre Doldu!";
+    document.getElementById("final-message").textContent = win ? "Tebrikler! Hepsini bildin. 🎉" : "Süre Doldu!";
     document.getElementById("final-score").textContent = score;
-
+    
     if (win) {
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
