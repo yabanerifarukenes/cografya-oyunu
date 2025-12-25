@@ -7,90 +7,189 @@ let gameActive = false;
 let currentQuestion = null;
 let questionsList = [];
 
-// --- DEV ÜLKE LİSTESİ (ISO KODU -> TÜRKÇE İSİM) ---
-// Haritadaki id="TR" kodunu "Türkiye" ile eşleştirir.
-const countryNames = {
-    "TR": "Türkiye", "US": "ABD", "DE": "Almanya", "FR": "Fransa", "GB": "İngiltere",
-    "RU": "Rusya", "CN": "Çin", "IN": "Hindistan", "BR": "Brezilya", "CA": "Kanada",
-    "AU": "Avustralya", "IT": "İtalya", "ES": "İspanya", "JP": "Japonya", "KR": "Güney Kore",
-    "MX": "Meksika", "AR": "Arjantin", "EG": "Mısır", "ZA": "Güney Afrika", "SA": "Suudi Arabistan",
-    "IR": "İran", "IQ": "Irak", "GR": "Yunanistan", "UA": "Ukrayna", "SE": "İsveç",
-    "NO": "Norveç", "FI": "Finlandiya", "PL": "Polonya", "NL": "Hollanda", "PT": "Portekiz",
-    "AZ": "Azerbaycan", "KZ": "Kazakistan", "UZ": "Özbekistan", "PK": "Pakistan", "ID": "Endonezya",
-    "CH": "İsviçre", "BE": "Belçika", "AT": "Avusturya", "DK": "Danimarka", "HU": "Macaristan",
-    "CZ": "Çekya", "RS": "Sırbistan", "RO": "Romanya", "BG": "Bulgaristan", "SY": "Suriye",
-    "IL": "İsrail", "AE": "Birleşik Arap Emirlikleri", "QA": "Katar", "KW": "Kuveyt", "LB": "Lübnan",
-    "JO": "Ürdün", "YE": "Yemen", "OM": "Umman", "AF": "Afganistan", "TM": "Türkmenistan",
-    "KG": "Kırgızistan", "TJ": "Tacikistan", "MN": "Moğolistan", "TH": "Tayland", "VN": "Vietnam",
-    "MY": "Malezya", "PH": "Filipinler", "NZ": "Yeni Zelanda", "DZ": "Cezayir", "MA": "Fas",
-    "TN": "Tunus", "LY": "Libya", "SD": "Sudan", "ET": "Etiyopya", "KE": "Kenya",
-    "NG": "Nijerya", "GH": "Gana", "CM": "Kamerun", "SN": "Senegal", "SO": "Somali",
-    "TZ": "Tanzanya", "UG": "Uganda", "MZ": "Mozambik", "ZW": "Zimbabve", "AO": "Angola",
-    "CI": "Fildişi Sahili", "CL": "Şili", "PE": "Peru", "CO": "Kolombiya", "VE": "Venezuela",
-    "EC": "Ekvador", "BO": "Bolivya", "PY": "Paraguay", "UY": "Uruguay", "CU": "Küba",
-    "DO": "Dominik Cumhuriyeti", "HT": "Haiti", "JM": "Jamaika", "PA": "Panama", "CR": "Kosta Rika",
-    "GT": "Guatemala", "HN": "Honduras", "SV": "El Salvador", "NI": "Nikaragua", "IS": "İzlanda",
-    "IE": "İrlanda", "EE": "Estonya", "LV": "Letonya", "LT": "Litvanya", "BY": "Belarus",
-    "MD": "Moldova", "SK": "Slovakya", "SI": "Slovenya", "HR": "Hırvatistan", "BA": "Bosna Hersek",
-    "ME": "Karadağ", "MK": "Kuzey Makedonya", "AL": "Arnavutluk", "CY": "Kıbrıs", "GE": "Gürcistan",
-    "AM": "Ermenistan", "TW": "Tayvan", "KP": "Kuzey Kore", "BD": "Bangladeş", "LK": "Sri Lanka",
-    "NP": "Nepal", "MM": "Myanmar", "KH": "Kamboçya", "LA": "Laos"
+// --- HARİTA VERİ TABANI (Senin SVG dosyana özel) ---
+// Hem ID (AF, DE) hem CLASS (Turkey, Russian Federation) destekler.
+const countryData = {
+    // --- SINIF İSMİ (CLASS) KULLANANLAR ---
+    "TURKEY": { name: "Türkiye", flag: "tr" },
+    "RUSSIAN FEDERATION": { name: "Rusya", flag: "ru" },
+    "UNITED STATES": { name: "ABD", flag: "us" },
+    "CHINA": { name: "Çin", flag: "cn" },
+    "BRAZIL": { name: "Brezilya", flag: "br" },
+    "CANADA": { name: "Kanada", flag: "ca" },
+    "AUSTRALIA": { name: "Avustralya", flag: "au" },
+    "INDIA": { name: "Hindistan", flag: "in" },
+    "ARGENTINA": { name: "Arjantin", flag: "ar" },
+    "KAZAKHSTAN": { name: "Kazakistan", flag: "kz" },
+    "ALGERIA": { name: "Cezayir", flag: "dz" },
+    "GREENLAND": { name: "Grönland", flag: "gl" },
+    "MONGOLIA": { name: "Moğolistan", flag: "mn" },
+    "INDONESIA": { name: "Endonezya", flag: "id" },
+    "MEXICO": { name: "Meksika", flag: "mx" },
+    "SAUDI ARABIA": { name: "Suudi Arabistan", flag: "sa" },
+    "IRAN": { name: "İran", flag: "ir" },
+    "NORWAY": { name: "Norveç", flag: "no" },
+    "SWEDEN": { name: "İsveç", flag: "se" },
+    "FINLAND": { name: "Finlandiya", flag: "fi" },
+    "UKRAINE": { name: "Ukrayna", flag: "ua" },
+    "UNITED KINGDOM": { name: "İngiltere", flag: "gb" },
+    "FRANCE": { name: "Fransa", flag: "fr" },
+    "SPAIN": { name: "İspanya", flag: "es" },
+    "ITALY": { name: "İtalya", flag: "it" },
+    "GERMANY": { name: "Almanya", flag: "de" },
+    "POLAND": { name: "Polonya", flag: "pl" },
+    "JAPAN": { name: "Japonya", flag: "jp" },
+    "SOUTH AFRICA": { name: "Güney Afrika", flag: "za" },
+    "EGYPT": { name: "Mısır", flag: "eg" },
+    "PAKISTAN": { name: "Pakistan", flag: "pk" },
+    "THAILAND": { name: "Tayland", flag: "th" },
+    "VIETNAM": { name: "Vietnam", flag: "vn" },
+    "PHILIPPINES": { name: "Filipinler", flag: "ph" },
+    "NEW ZEALAND": { name: "Yeni Zelanda", flag: "nz" },
+    "CHILE": { name: "Şili", flag: "cl" },
+    "PERU": { name: "Peru", flag: "pe" },
+    "COLOMBIA": { name: "Kolombiya", flag: "co" },
+    "VENEZUELA": { name: "Venezuela", flag: "ve" },
+    "MALAYSIA": { name: "Malezya", flag: "my" },
+    "GREECE": { name: "Yunanistan", flag: "gr" },
+    "ROMANIA": { name: "Romanya", flag: "ro" },
+    
+    // --- ID KODU KULLANANLAR (Senin SVG'deki 2 harfliler) ---
+    "AF": { name: "Afganistan", flag: "af" },
+    "AL": { name: "Arnavutluk", flag: "al" },
+    "AO": { name: "Angola", flag: "ao" },
+    "AT": { name: "Avusturya", flag: "at" },
+    "AZ": { name: "Azerbaycan", flag: "az" },
+    "BD": { name: "Bangladeş", flag: "bd" },
+    "BE": { name: "Belçika", flag: "be" },
+    "BG": { name: "Bulgaristan", flag: "bg" },
+    "BO": { name: "Bolivya", flag: "bo" },
+    "BA": { name: "Bosna Hersek", flag: "ba" },
+    "BY": { name: "Belarus", flag: "by" },
+    "CH": { name: "İsviçre", flag: "ch" },
+    "CU": { name: "Küba", flag: "cu" },
+    "CZ": { name: "Çekya", flag: "cz" },
+    "DK": { name: "Danimarka", flag: "dk" },
+    "EC": { name: "Ekvador", flag: "ec" },
+    "EE": { name: "Estonya", flag: "ee" },
+    "ET": { name: "Etiyopya", flag: "et" },
+    "GE": { name: "Gürcistan", flag: "ge" },
+    "GH": { name: "Gana", flag: "gh" },
+    "HU": { name: "Macaristan", flag: "hu" },
+    "HR": { name: "Hırvatistan", flag: "hr" },
+    "IQ": { name: "Irak", flag: "iq" },
+    "IE": { name: "İrlanda", flag: "ie" },
+    "IL": { name: "İsrail", flag: "il" },
+    "IS": { name: "İzlanda", flag: "is" },
+    "JO": { name: "Ürdün", flag: "jo" },
+    "KE": { name: "Kenya", flag: "ke" },
+    "KG": { name: "Kırgızistan", flag: "kg" },
+    "KH": { name: "Kamboçya", flag: "kh" },
+    "KP": { name: "Kuzey Kore", flag: "kp" },
+    "KR": { name: "Güney Kore", flag: "kr" },
+    "KW": { name: "Kuveyt", flag: "kw" },
+    "LA": { name: "Laos", flag: "la" },
+    "LK": { name: "Sri Lanka", flag: "lk" },
+    "LT": { name: "Litvanya", flag: "lt" },
+    "LV": { name: "Letonya", flag: "lv" },
+    "LY": { name: "Libya", flag: "ly" },
+    "MA": { name: "Fas", flag: "ma" },
+    "MD": { name: "Moldova", flag: "md" },
+    "MG": { name: "Madagaskar", flag: "mg" },
+    "MK": { name: "Kuzey Makedonya", flag: "mk" },
+    "MM": { name: "Myanmar", flag: "mm" },
+    "MZ": { name: "Mozambik", flag: "mz" },
+    "NG": { name: "Nijerya", flag: "ng" },
+    "NL": { name: "Hollanda", flag: "nl" },
+    "NP": { name: "Nepal", flag: "np" },
+    "NZ": { name: "Yeni Zelanda", flag: "nz" },
+    "OM": { name: "Umman", flag: "om" },
+    "PH": { name: "Filipinler", flag: "ph" },
+    "PK": { name: "Pakistan", flag: "pk" },
+    "PL": { name: "Polonya", flag: "pl" },
+    "PT": { name: "Portekiz", flag: "pt" },
+    "PY": { name: "Paraguay", flag: "py" },
+    "QA": { name: "Katar", flag: "qa" },
+    "RO": { name: "Romanya", flag: "ro" },
+    "RS": { name: "Sırbistan", flag: "rs" },
+    "SD": { name: "Sudan", flag: "sd" },
+    "SI": { name: "Slovenya", flag: "si" },
+    "SK": { name: "Slovakya", flag: "sk" },
+    "SN": { name: "Senegal", flag: "sn" },
+    "SO": { name: "Somali", flag: "so" },
+    "SY": { name: "Suriye", flag: "sy" },
+    "TJ": { name: "Tacikistan", flag: "tj" },
+    "TM": { name: "Türkmenistan", flag: "tm" },
+    "TN": { name: "Tunus", flag: "tn" },
+    "TZ": { name: "Tanzanya", flag: "tz" },
+    "UG": { name: "Uganda", flag: "ug" },
+    "UY": { name: "Uruguay", flag: "uy" },
+    "UZ": { name: "Özbekistan", flag: "uz" },
+    "YE": { name: "Yemen", flag: "ye" },
+    "ZM": { name: "Zambiya", flag: "zm" },
+    "ZW": { name: "Zimbabve", flag: "zw" }
 };
 
-// --- TÜRKÇE KARAKTER TEMİZLEME VE DÜZELTME ---
+// --- TÜRKÇE KARAKTER TEMİZLEME ---
 function trToEng(str) {
     if (!str) return "";
-    let clean = str.replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's').replace(/I/g, 'i').replace(/İ/g, 'i').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
-                   .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                   .toLowerCase().trim();
-    return clean;
+    return str.replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's').replace(/I/g, 'i').replace(/İ/g, 'i').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+              .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+              .toLowerCase().trim();
 }
 
 // --- HARİTAYI KUR ---
 window.addEventListener("DOMContentLoaded", () => {
     setupMap();
     
-    // Enter tuşu ile tahmin (Mod 1)
-    document.getElementById("world-input").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") handleTypeGuess();
-    });
+    // Yazma alanına Enter özelliği
+    const inputField = document.getElementById("world-input");
+    if (inputField) {
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") handleTypeGuess();
+        });
+    }
 });
 
 function setupMap() {
     const paths = document.querySelectorAll("path");
+    
+    // Her bir path için kontrol et
     paths.forEach(path => {
-        // SVG içindeki ID bazen "TR", bazen "path342" olabilir ama name="Türkiye" olabilir.
-        // Genelde ID veya name attribute kullanılır.
-        let code = path.id.toUpperCase();
+        // 1. Önce ID var mı bak (AF, TR gibi)
+        let idKey = path.id ? path.id.toUpperCase() : "";
         
-        // Eğer ID yoksa veya uzunsa class veya name'e bak (SVG yapısına göre değişir)
-        if (!code || code.length > 2) {
-             // Yedek kontrol: name özelliği var mı?
-             const nameAttr = path.getAttribute("name");
-             if(nameAttr) {
-                 // İsmi bizim listede tersine aratmamız gerekebilir ama şimdilik ID'den gidelim
-             }
-        }
+        // 2. Class var mı bak (Turkey, United States gibi)
+        let classKey = path.getAttribute("class") ? path.getAttribute("class").toUpperCase() : "";
+        
+        // Eşleşme bul (Önce Class, sonra ID dene)
+        let match = countryData[classKey] || countryData[idKey];
 
-        if (countryNames[code]) {
-            countries.push({
-                element: path,
-                code: code,
-                name: countryNames[code],
-                cleanName: trToEng(countryNames[code])
-            });
+        if (match) {
+            // Path elementine bizim verimizi ekle
+            path.setAttribute("data-game-name", match.name); // Türkçe isim
+            path.setAttribute("data-game-key", trToEng(match.name)); // Karşılaştırma anahtarı (turkiye)
             
-            // Mouse gelince isim göster (Tooltip)
-            const titleEl = document.createElement("title");
-            titleEl.textContent = countryNames[code];
-            path.appendChild(titleEl);
-            
-            // Tıklama olayı (Mod 1 ve Mod 2 için farklı işleyecek)
-            path.addEventListener("click", () => {
-                // Şimdilik sadece görsel efekt veya ileride tıklayarak bulma için
-            });
+            // Eğer ülke zaten listede yoksa listeye ekle (Tekrarları önle)
+            if (!countries.find(c => c.name === match.name)) {
+                countries.push({
+                    name: match.name,
+                    cleanName: trToEng(match.name),
+                    flagCode: match.flag
+                });
+            }
+
+            // Mouse üzerine gelince isim göster (Title)
+            let title = path.querySelector("title");
+            if (!title) {
+                title = document.createElement("title");
+                path.appendChild(title);
+            }
+            title.textContent = match.name;
         }
     });
+    
+    console.log("Harita Yüklendi. Tanınan Ülke Sayısı:", countries.length);
 }
 
 // --- OYUN SEÇİMİ ---
@@ -99,25 +198,22 @@ function selectWorldGame(mode) {
     document.getElementById("world-menu").style.display = "none";
     const title = document.getElementById("game-title");
     
-    // Alanları temizle/gizle
     document.getElementById("input-area").style.display = "none";
     document.getElementById("options-area").style.display = "none";
     document.getElementById("flag-container").style.display = "none";
     document.getElementById("target-display").textContent = "";
 
     if (mode === 1) {
-        // İSİM YAZMA MODU
         title.textContent = "Mod 1: İsmini Yaz & Boya";
         document.getElementById("input-area").style.display = "block";
         document.getElementById("target-display").textContent = "Bildiğin ülke isimlerini yaz...";
         document.getElementById("world-input").focus();
-        startGame(240); // 4 Dakika (Çok ülke var)
+        startGame(240); 
     } else if (mode === 2) {
-        // ŞIKLI BAYRAK MODU
         title.textContent = "Mod 2: Bayrağı Bil";
         document.getElementById("flag-container").style.display = "block";
         document.getElementById("options-area").style.display = "flex";
-        startGame(90); // 90 saniye
+        startGame(90); 
     }
 }
 
@@ -126,9 +222,9 @@ function startGame(time) {
     timeLeft = time;
     gameActive = true;
     updateStats();
-    questionsList = [...countries]; // Listeyi kopyala
+    questionsList = [...countries]; 
 
-    clearInterval(timerInterval);
+    if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         timeLeft--;
         updateStats();
@@ -138,7 +234,7 @@ function startGame(time) {
     if (currentMode === 2) askFlagQuestion();
 }
 
-// --- MOD 1: İSİM YAZMA (AKILLI KONTROL) ---
+// --- MOD 1: İSİM YAZMA ---
 function handleTypeGuess() {
     if (!gameActive || currentMode !== 1) return;
 
@@ -146,26 +242,30 @@ function handleTypeGuess() {
     const feedback = document.getElementById("typed-feedback");
     let val = trToEng(input.value);
 
-    // --- EŞ ANLAMLI VE YAYGIN HATALAR ---
-    // Kullanıcı "Amerika" yazar ama kod "ABD"dir.
-    if (val === "amerika" || val === "usa" || val === "birlesik devletler") val = "abd";
-    if (val === "ingiltere" || val === "birlesik krallik" || val === "uk") val = "ingiltere";
-    if (val === "guney kore" || val === "kore") val = "guney kore";
-    if (val === "kuzey kore") val = "kuzey kore";
-    if (val === "bosna" || val === "bosna hersek") val = "bosna hersek";
-    if (val === "cekya" || val === "cek cumhuriyeti") val = "cekya";
-    if (val === "bae" || val === "birlesik arap emirlikleri") val = "birlesik arap emirlikleri";
-    // ------------------------------------
+    // Eş Anlamlı Düzeltmeler
+    if (val === "amerika" || val === "usa") val = "abd";
+    if (val === "ingiltere" || val === "birlesik krallik") val = "ingiltere";
+    if (val === "guney kore") val = "guney kore";
+    if (val === "cek cumhuriyeti") val = "cekya";
 
+    // Listede var mı?
     const foundCountry = countries.find(c => c.cleanName === val);
 
     if (foundCountry) {
-        if (foundCountry.element.style.fill === "rgb(46, 204, 113)") { // Zaten yeşilse
+        // Haritada bu ülkeye ait TÜM parçaları bul ve boya
+        // (Çünkü Türkiye SVG'de 2 parça, ABD 50 parça olabilir)
+        const allPaths = document.querySelectorAll(`path[data-game-key="${val}"]`);
+        let alreadyFound = false;
+
+        allPaths.forEach(p => {
+            if (p.style.fill === "rgb(46, 204, 113)") alreadyFound = true;
+            p.style.fill = "#2ecc71"; // Yeşil
+        });
+
+        if (alreadyFound) {
             feedback.textContent = "Bunu zaten buldun!";
             feedback.style.color = "orange";
         } else {
-            // DOĞRU
-            foundCountry.element.style.fill = "#2ecc71"; // Yeşil
             score += 10;
             updateStats();
             feedback.textContent = "✅ " + foundCountry.name;
@@ -173,7 +273,7 @@ function handleTypeGuess() {
             input.value = "";
         }
     } else {
-        feedback.textContent = "❌ Ülke bulunamadı veya haritada yok.";
+        feedback.textContent = "❌ Haritada bulunamadı (veya ismi farklı).";
         feedback.style.color = "red";
     }
 }
@@ -185,33 +285,26 @@ function askFlagQuestion() {
         return;
     }
     
-    // Soru seç
     const randomIndex = Math.floor(Math.random() * questionsList.length);
     currentQuestion = questionsList[randomIndex];
-    questionsList.splice(randomIndex, 1); // Listeden çıkar
+    questionsList.splice(randomIndex, 1);
 
-    // Bayrağı göster (FlagCDN küçük harf ister: tr, us)
-    document.getElementById("flag-img").src = `https://flagcdn.com/w320/${currentQuestion.code.toLowerCase()}.png`;
+    // FlagCDN
+    document.getElementById("flag-img").src = `https://flagcdn.com/w320/${currentQuestion.flagCode}.png`;
     document.getElementById("target-display").textContent = "Hangi Ülke?";
 
-    // Şıkları Hazırla (1 Doğru + 3 Yanlış)
+    // Şıklar
     let options = [currentQuestion];
-    
-    // Yanlış şıklar bul
     while (options.length < 4) {
         const randomWrong = countries[Math.floor(Math.random() * countries.length)];
-        // Eğer zaten şıklarda yoksa ve undefined değilse ekle
         if (randomWrong && !options.includes(randomWrong)) {
             options.push(randomWrong);
         }
     }
-
-    // Şıkları karıştır
     options.sort(() => Math.random() - 0.5);
 
-    // Butonları oluştur
     const area = document.getElementById("options-area");
-    area.innerHTML = ""; // Temizle
+    area.innerHTML = ""; 
     
     options.forEach(opt => {
         const btn = document.createElement("button");
@@ -226,22 +319,20 @@ function checkFlagAnswer(selected, btnElement) {
     if (!gameActive) return;
 
     const allBtns = document.querySelectorAll(".option-btn");
-    
-    // Tıklamaları engelle
     allBtns.forEach(b => b.onclick = null);
 
-    if (selected.code === currentQuestion.code) {
-        // DOĞRU
+    if (selected.name === currentQuestion.name) {
         btnElement.classList.add("correct");
         score += 10;
-        // Haritada da yeşil yakalım (hoşluk olsun)
-        currentQuestion.element.style.fill = "#2ecc71";
+        
+        // Haritada o ülkeyi yeşil yak (Görsel efekt)
+        const mapPaths = document.querySelectorAll(`path[data-game-name="${currentQuestion.name}"]`);
+        mapPaths.forEach(p => p.style.fill = "#2ecc71");
+
         setTimeout(askFlagQuestion, 1000);
     } else {
-        // YANLIŞ
         btnElement.classList.add("wrong");
         score -= 5;
-        // Doğru olanı göster
         allBtns.forEach(b => {
             if (b.textContent === currentQuestion.name) b.classList.add("correct");
         });
@@ -259,7 +350,7 @@ function endGame(win = false) {
     gameActive = false;
     clearInterval(timerInterval);
     document.getElementById("game-over-modal").style.display = "flex";
-    document.getElementById("final-message").textContent = win ? "Tebrikler! Hepsini bildin. 🎉" : "Süre Doldu!";
+    document.getElementById("final-message").textContent = win ? "Tebrikler! 🎉" : "Süre Doldu!";
     document.getElementById("final-score").textContent = score;
     
     if (win) {
