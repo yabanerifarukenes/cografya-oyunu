@@ -1,38 +1,35 @@
-# 🇹🇷 Türkiye Coğrafya ve Şehir Bulmaca Oyunu
+# 🇹🇷 Türkiye Şehir Bulmaca Oyunu (Turkish City Quiz)
 
-Bu proje, HTML, CSS ve JavaScript kullanılarak geliştirilmiş interaktif bir Türkiye haritası oyunudur. Kullanıcıların coğrafya bilgisini ölçmeyi ve Türkiye'nin illerini eğlenceli bir şekilde öğretmeyi amaçlar.
+Türkiye haritası üzerinde coğrafi bilginizi test edebileceğiniz, interaktif bir web tabanlı bulmaca oyunu.
 
-![Proje Görseli](https://via.placeholder.com/800x400?text=Oyun+Ekran+Goruntusu)
-*(Not: Buraya oyunun ekran görüntüsünü koyabilirsin)*
 
-## 🎮 Oyun Modları
+## 🎯 Proje Hakkında
 
-Proje içerisinde 3 farklı oyun modu bulunmaktadır:
+Bu proje, kullanıcıların Türkiye haritası üzerindeki illerin yerlerini ne kadar iyi bildiklerini ölçmek amacıyla geliştirilmiştir. Kullanıcıya rastgele bir il sorulur ve harita üzerinden doğru ili seçmesi istenir.
 
-1.  **📍 Şehir Bulmaca (Harita):** Size bir il ismi verilir ve harita üzerinden doğru yeri bulmanız istenir.
-2.  **⌨️ İsmini Yaz & Boya:** Harita üzerindeki illeri klavye ile yazarak bulmaya çalışırsınız. Yazım hatalarını (örn: "antep" -> "Gaziantep") otomatik düzelten akıllı bir sisteme sahiptir.
-3.  **🚗 Plaka Tahmin:** Size bir şehir verilir ve plaka kodunu girmeniz istenir.
-
-## 🛠️ Kullanılan Teknolojiler
-
-* **HTML5:** Semantik yapı ve SVG harita entegrasyonu.
-* **CSS3:** Modern tasarım, Flexbox, CSS Grid, Glassmorphism efektleri ve responsive yapı.
-* **JavaScript (ES6+):** DOM manipülasyonu, oyun mantığı, zamanlayıcılar ve akıllı metin işleme algoritmaları.
-* **SVG:** İnteraktif ve ölçeklenebilir Türkiye haritası.
+[Canlı Demo İçin Tıklayın](https://yabanerifarukenes.github.io/cografya-oyunu/) 
 
 ## ✨ Özellikler
 
-* **Akıllı İsim Algılama:** "Afyon", "Maraş", "Antep" gibi kısaltmaları veya Türkçe karakter hatalarını (Iğdır -> igdir) otomatik algılar.
-* **Modern Arayüz:** Canlı renkler ve kullanıcı dostu tasarım.
-* **Puan ve Süre Sistemi:** Rekabetçi bir oyun deneyimi sunar.
-* **Konfeti Efekti:** Oyun başarıyla tamamlandığında görsel kutlama.
+* **İnteraktif Harita:** SVG/Canvas tabanlı tıklanabilir Türkiye haritası.
+* **Puanlama Sistemi:** Doğru ve yanlış cevaplara göre anlık skor takibi.
+* **Zaman Sayacı:** (Varsa) Belirli bir sürede kaç il bilineceğini ölçen sayaç.
+* **Duyarlı Tasarım (Responsive):** Hem bilgisayar hem de tablet/telefon ekranlarına uyumlu arayüz.
+* **Şehir Bilgileri:** Seçilen şehrin plaka kodu veya bölgesi hakkında kısa bilgiler (Varsa).
 
-## 🚀 Kurulum ve Çalıştırma
+## 🛠️ Kullanılan Teknolojiler
 
-1.  Bu projeyi bilgisayarınıza indirin veya klonlayın.
-2.  `index.html` dosyasını tarayıcınızda açın.
-3.  İyi eğlenceler!
+Bu proje aşağıdaki teknolojiler kullanılarak geliştirilmiştir:
+
+* **HTML5** - Sayfa iskeleti
+* **CSS3** - Stil ve animasyonlar
+* **JavaScript (ES6+)** - Oyun mantığı ve DOM manipülasyonu
+
+
+
+## 📝 Lisans
+
+Bu proje MIT Lisansı ile lisanslanmıştır.
 
 ---
-**Geliştirici:** [Senin Adın]
-**Ders:** Final Projesi
+**Geliştirici:** [Faruk Enes Yabaneri]
